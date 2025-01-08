@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>装備素材の個数をCSV出力</title>
+</head>
+<body>
+  <table>
+    <form name="InsForm">
+      <tr>
+        <td><textarea name="TextDef" rows="30" wrap="off" cols="70"></textarea></td>
+      </tr>
+    </form>
+    </table>
+  <button id="exportCSV">CSVを出力</button>
+
+  <script>
+
+    // CSVエクスポート関数
+    function exportCSV() {
+      text = document.InsForm.TextDef.value.replace(/\n/g,"").replace(/X/g,"x").replace(/ /g,"");
+    text = text.replace(/T/g, "\nT");
+    text = text.replace("\n", "");
+
+    const lines = text.split(/\n/);
+
+    // Create a map to store the counts for each level
+    const dataMap = {};
+
+    lines.forEach(line => {
+      const [level, count] = line.split('x');
+      if (!dataMap[level]) {
+        dataMap[level] = [];
+      }
+      dataMap[level].push(Number(count));
+    });
+
+    // Convert the map into the desired array format
+    const data = Object.entries(dataMap).map(([level, counts]) => ({
+      level,
+      counts
+    }));
+
+      let csvContent = "装備レベル,帽子,グローブ,シューズ,バッグ,バッジ,ヘアピン,お守り,腕時計,ネックレス\n";
+
+      data.forEach(row => {
+        const rowData = [row.level, ...row.counts].join(",");
+        csvContent += rowData + "\n";
+      });
+
+      const BOM = '\uFEFF';
+      const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", "装備素材の個数.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    document.getElementById("exportCSV").addEventListener("click", exportCSV);
+
+
+  </script>
+</body>
+</html>
